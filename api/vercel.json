@@ -1,15 +1,4 @@
 {
-  "buildCommand": "npm install && npm run build",
-  "outputDirectory": "dist",
-  "env": {
-    "ANTHROPIC_API_KEY": {
-      "required": true
-    }
-  },
-  "functions": {
-    "api/**/*.js": {
-      "maxDuration": 30,
-      "memory": 1024
-    }
-  }
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist"
 }
