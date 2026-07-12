@@ -87,28 +87,34 @@
         const reader = new FileReader();
         reader.onload = (evt) => {
           const csv = evt.target.result;
-          const lines = csv.split('\n');
-          const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+          const lines = csv.split('\n').filter(l => l.trim());
+          const headers = lines[0].split(',').map(h => h.trim());
           const comps = [];
           for (let i = 1; i < lines.length; i++) {
             if (!lines[i].trim()) continue;
             const values = lines[i].split(',').map(v => v.trim());
             const comp = { id: Date.now() + i };
-            headers.forEach((h, idx) => {
-              if (h.includes('address')) comp.address = values[idx] || '';
-              else if (h.includes('city')) comp.city = values[idx] || '';
-              else if (h.includes('state')) comp.state = values[idx] || '';
-              else if (h.includes('bed')) comp.beds = values[idx] || '';
-              else if (h.includes('bath')) comp.baths = values[idx] || '';
-              else if (h.includes('sqft')) comp.sqft = values[idx] || '';
-              else if (h.includes('year')) comp.yearBuilt = values[idx] || '';
-              else if (h.includes('price')) comp.salePrice = values[idx] || '';
-              else if (h.includes('date')) comp.saleDate = values[idx] || '';
-            });
-            comps.push(comp);
+            const headerMap = {};
+            headers.forEach((h, idx) => headerMap[h] = values[idx] || '');
+            
+            // Map Bright MLS columns
+            const num = headerMap['StreetNumber'] || '';
+            const dir = headerMap['StreetDirection'] || '';
+            const street = headerMap['StreetName'] || '';
+            comp.address = [num, dir, street].filter(x => x).join(' ');
+            comp.city = headerMap['City'] || '';
+            comp.state = headerMap['State'] || '';
+            comp.beds = headerMap['Bedrooms'] || '';
+            comp.baths = (parseInt(headerMap['BathsFull'] || 0) + (parseInt(headerMap['BathsHalf'] || 0) * 0.5)).toString() || '';
+            comp.sqft = headerMap['InteriorSqFt'] || headerMap['AboveGradeSqFt'] || '';
+            comp.yearBuilt = headerMap['HomeBuilt'] || headerMap['Age'] || '';
+            comp.salePrice = headerMap['SoldPrice'] || '';
+            comp.saleDate = headerMap['SettledDate'] || '';
+            
+            if (comp.address && comp.city) comps.push(comp);
           }
           setComparables(prev => [...prev, ...comps]);
-          setError(`✓ Loaded ${comps.length} comparables from CSV`);
+          setError(`✓ Loaded ${comps.length} comparables from Bright MLS CSV`);
         };
         reader.readAsText(file);
       };
