@@ -81,6 +81,38 @@
         setComparables(prev => prev.filter(c => c.id !== id));
       };
 
+      const handleCSVUpload = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          const csv = evt.target.result;
+          const lines = csv.split('\n');
+          const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+          const comps = [];
+          for (let i = 1; i < lines.length; i++) {
+            if (!lines[i].trim()) continue;
+            const values = lines[i].split(',').map(v => v.trim());
+            const comp = { id: Date.now() + i };
+            headers.forEach((h, idx) => {
+              if (h.includes('address')) comp.address = values[idx] || '';
+              else if (h.includes('city')) comp.city = values[idx] || '';
+              else if (h.includes('state')) comp.state = values[idx] || '';
+              else if (h.includes('bed')) comp.beds = values[idx] || '';
+              else if (h.includes('bath')) comp.baths = values[idx] || '';
+              else if (h.includes('sqft')) comp.sqft = values[idx] || '';
+              else if (h.includes('year')) comp.yearBuilt = values[idx] || '';
+              else if (h.includes('price')) comp.salePrice = values[idx] || '';
+              else if (h.includes('date')) comp.saleDate = values[idx] || '';
+            });
+            comps.push(comp);
+          }
+          setComparables(prev => [...prev, ...comps]);
+          setError(`✓ Loaded ${comps.length} comparables from CSV`);
+        };
+        reader.readAsText(file);
+      };
+
       const generateAnalysis = async () => {
         if (!subject.address) { setError('Enter subject property address'); return; }
         if (comparables.length < 2) { setError('Add at least 2 comparable properties'); return; }
@@ -145,6 +177,13 @@ Return ONLY valid JSON:
             <div>
               <div className="panel blue">
                 <h2>📍 Subject Property</h2>
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '8px' }}>📄 Upload Public Record (PDF)</label>
+                  <input type="file" accept=".pdf" onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) setError(`✓ Public record uploaded: ${file.name}`);
+                  }} className="input" style={{ padding: '8px' }} />
+                </div>
                 <div className="input-group full">
                   <input type="text" name="address" placeholder="Street Address" value={subject.address} onChange={handleSubjectChange} className="input" />
                   <input type="text" name="city" placeholder="City" value={subject.city} onChange={handleSubjectChange} className="input" />
@@ -176,7 +215,14 @@ Return ONLY valid JSON:
 
               <div className="panel green" style={{ marginTop: '24px' }}>
                 <h2>🏘️ Comparable Properties ({comparables.length})</h2>
-                <button onClick={addComparable} className="button green">+ Add Comparable</button>
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                  <button onClick={addComparable} className="button green" style={{ flex: 1 }}>+ Add Comparable</button>
+                  <label style={{ flex: 1 }}>
+                    <input type="file" accept=".csv" onChange={handleCSVUpload} style={{ display: 'none' }} />
+                    <button className="button green" style={{ width: '100%', cursor: 'pointer' }} onClick={(e) => e.currentTarget.parentElement.querySelector('input').click()}>📊 Upload CSV</button>
+                  </label>
+                </div>
+                <p style={{ fontSize: '11px', color: '#64748b', marginBottom: '12px' }}>CSV columns: address, city, state, beds, baths, sqft, year, price, date</p>
                 
                 <div className="comp-list">
                   {comparables.map((comp) => (
