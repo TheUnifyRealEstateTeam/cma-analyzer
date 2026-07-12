@@ -1,27 +1,5 @@
-{
-  "name": "cma-analyzer",
-  "version": "1.0.0",
-  "description": "CMA Analyzer - AI-powered real estate market analysis",
-  "type": "module",
-  "scripts": {
+"scripts": {
     "dev": "vite",
-    "build": "npm install && vite build",
-    "preview": "vite preview",
-    "start": "vite preview"
+    "build": "vite build && echo 'Build complete'",
+    "preview": "vite preview"
   },
-  "dependencies": {
-    "@anthropic-ai/sdk": "^0.21.0",
-    "@supabase/supabase-js": "^2.38.4",
-    "lucide-react": "^0.383.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-react": "^4.2.1",
-    "vite": "^4.4.9"
-  },
-  "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=9.0.0"
-  }
-}
